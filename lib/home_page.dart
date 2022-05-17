@@ -35,48 +35,60 @@ class _HomePageState extends State<HomePage> {
     await db.execute(
       "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, firstName TEXT, lastName TEXT)",
     );
+    await getData();
+  }
+
+  getData() async {
     var records = await db.rawQuery("SELECT * FROM users");
+
     setState(() {
+      data.clear();
       data.addAll(records);
     });
+    print("*********************************************");
+    print(data);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Add User")),
-      body: Column(
-        children: <Widget>[
-          TextField(
-            controller: fnController,
-            decoration: InputDecoration(labelText: "First Name"),
-          ),
-          TextField(
-            controller: lnController,
-            decoration: InputDecoration(labelText: "Last Name"),
-          ),
-          ElevatedButton(
-            child: Text("Add"),
-            onPressed: () {
-              db.transaction((txn) async {
-                await txn.rawInsert(
-                  "INSERT INTO users (firstName, lastName) VALUES (?, ?)",
-                  [fnController.text, lnController.text],
-                );
-              });
-              fnController.clear();
-              lnController.clear();
-            },
-          ),
-          Expanded(
-              child: ListView(
-            children: [
-              ...data.map((e) => ListTile(
-                    title: Text("${e["firstName"]} ${e["lastName"]}"),
-                  )),
-            ],
-          )),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: <Widget>[
+            TextField(
+              controller: fnController,
+              decoration: InputDecoration(labelText: "First Name"),
+            ),
+            TextField(
+              controller: lnController,
+              decoration: InputDecoration(labelText: "Last Name"),
+            ),
+            ElevatedButton(
+              child: Text("Add"),
+              onPressed: () async {
+                await db.transaction((txn) async {
+                  await txn.rawInsert(
+                    "INSERT INTO users (firstName, lastName) VALUES (?, ?)",
+                    [fnController.text, lnController.text],
+                  );
+                });
+                await getData();
+                fnController.clear();
+                lnController.clear();
+              },
+            ),
+            Expanded(
+                child: ListView(
+              children: [
+                ...data.map((e) => ListTile(
+                      title: Text("${e["firstName"]} ${e["lastName"]}"),
+                    )),
+              ],
+            )),
+          ],
+        ),
       ),
     );
   }
