@@ -84,41 +84,46 @@ class _HomePageState extends State<HomePage> {
               children: [
                 ...data.map((e) => ListTile(
                       title: Text("${e["firstName"]} ${e["lastName"]}"),
-                      trailing: Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: () async {
-                              await db.transaction((txn) async {
-                                await txn.rawUpdate(
-                                  "UPDATE users SET firstName = ?, lastName = ? WHERE id = ?",
-                                  [
-                                    fnController.text,
-                                    lnController.text,
-                                    e["id"]
-                                  ],
-                                );
-                              });
-                              await getData();
-                              fnController.clear();
-                              lnController.clear();
-                            },
+                      trailing: SizedBox(
+                        width: 100,
+                        child: Flexible(
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit),
+                                onPressed: () async {
+                                  await db.transaction((txn) async {
+                                    await txn.rawUpdate(
+                                      "UPDATE users SET firstName = ?, lastName = ? WHERE id = ?",
+                                      [
+                                        fnController.text,
+                                        lnController.text,
+                                        e["id"]
+                                      ],
+                                    );
+                                  });
+                                  await getData();
+                                  fnController.clear();
+                                  lnController.clear();
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete),
+                                onPressed: () async {
+                                  await db.transaction((txn) async {
+                                    await txn.rawDelete(
+                                      "DELETE FROM users WHERE id = ?",
+                                      [e["id"]],
+                                    );
+                                  });
+                                  await getData();
+                                  fnController.clear();
+                                  lnController.clear();
+                                },
+                              ),
+                            ],
                           ),
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () async {
-                              await db.transaction((txn) async {
-                                await txn.rawDelete(
-                                  "DELETE FROM users WHERE id = ?",
-                                  [e["id"]],
-                                );
-                              });
-                              await getData();
-                              fnController.clear();
-                              lnController.clear();
-                            },
-                          ),
-                        ],
+                        ),
                       ),
                     )),
               ],
